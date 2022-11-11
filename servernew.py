@@ -19,13 +19,13 @@ from sklearn import neighbors
 from sklearn.ensemble import RandomForestRegressor
 
 st.header('Upload your files')
-uploaded_file_1 = st.file_uploader("1. Choose a file (csv)",key=2)
+uploaded_file_1 = st.file_uploader("1. Choose FTIR file (csv)",key=2)
 if uploaded_file_1 is not None:
     # Can be used wherever a "file-like" object is accepted:
     dataframe = pd.read_csv(uploaded_file_1)
     st.write(dataframe)
 
-uploaded_file_2 = st.file_uploader("1. Choose a file (csv)",key=3)
+uploaded_file_2 = st.file_uploader("1. Choose Sensors file (csv)",key=3)
 if uploaded_file_2 is not None:
     # Can be used wherever a "file-like" object is accepted:
     dataframe = pd.read_csv(uploaded_file_2)
