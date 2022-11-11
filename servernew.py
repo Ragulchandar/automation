@@ -109,7 +109,7 @@ if merge:
         st.write("Number of rows: ", out_df.shape[0])
         st.write("Number of null values in each column:", out_df.isna().sum())
         
-
+#comment 
 def clean_col(df):
  df= df.dropna(axis=1, thresh=df.shape[0]*0.4)
  cols = df.columns
