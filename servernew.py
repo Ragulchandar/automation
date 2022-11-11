@@ -5,7 +5,7 @@ import math
 # mdates
 import matplotlib.dates as mdates
 
-st.title('Metalmark Automation')
+st.title('🦋🤖 Metalmark Automation 🤖🦋')
 
 import pandas as pd
 import numpy as np
