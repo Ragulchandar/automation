@@ -111,7 +111,7 @@ if merge:
         
 
 def clean_col(df):
- df= df.dropna(axis=1, how='any', thresh=df.shape[0]*0.4)
+ df= df.dropna(axis=1, thresh=df.shape[0]*0.4)
  cols = df.columns
  for i in cols :
   if df[i].isna().sum() < df.shape[0]*0.4:
