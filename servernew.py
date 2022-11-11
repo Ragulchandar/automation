@@ -1,12 +1,7 @@
 
 from heapq import merge
-from telnetlib import GA
-from turtle import color
-from pyrsistent import s
-from sklearn.feature_selection import SelectorMixin
 import streamlit as st
 import math
-import altair as alt
 # mdates
 import matplotlib.dates as mdates
 
@@ -14,17 +9,13 @@ st.title('Metalmark ML Automation')
 
 import pandas as pd
 import numpy as np
-from io import StringIO
 from pandas.core.arrays.datetimelike import timedelta
 import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.metrics import accuracy_score,f1_score,recall_score,precision_score, confusion_matrix
 from sklearn import neighbors
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 
 st.header('Upload your files')
