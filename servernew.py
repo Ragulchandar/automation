@@ -19,10 +19,11 @@ from sklearn import neighbors
 from sklearn.ensemble import RandomForestRegressor
 
 st.header('Upload your files')
+
 uploaded_file_1 = st.file_uploader("1. Choose FTIR file (csv)",key=2)
 if uploaded_file_1 is not None:
     # Can be used wherever a "file-like" object is accepted:
-    dataframe = pd.read_csv(uploaded_file_1)
+    dataframe = pd.read_csv(uploaded_file_1, encoding= 'latin-1')
     st.write(dataframe)
 
 uploaded_file_2 = st.file_uploader("1. Choose Sensors file (csv)",key=3)
@@ -34,7 +35,7 @@ def say_hello(name):
     st.write("Hello " + name)
 
 
-Gases= st.selectbox('Select Gases', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c', 'Toluene 35c'], key='99')
+Gases= st.selectbox('Select Gases', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c', 'Toluene 35c', 'o3 35c hitran', 'ETHYLENE 35C', 'ACETONE 35C', 'Octane 35c', 'Butane 25c'], key='99')
 lineplot = st.button("Lineplot",key=20)
 if lineplot:
     if uploaded_file_2 is not None and uploaded_file_1 is not None:
@@ -104,35 +105,36 @@ if merge:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
+        out_df=out_df.interpolate(method='linear', limit_direction='forward', axis=0)
         st.write(out_df)
         # st write number of rows
         st.write("Number of rows: ", out_df.shape[0])
         st.write("Number of null values in each column:", out_df.isna().sum())
         
 def clean_col(df):
- df= df.dropna(axis=1, thresh=df.shape[0]*0.4)
- cols = df.columns
- for i in cols :
-  if df[i].isna().sum() < df.shape[0]*0.4:
-   df[i] = df[i].fillna(df[i].mean())
-  else:
-    df = df.drop(columns=i)
+#  df= df.dropna(axis=1, thresh=df.shape[0]*0.4)
+#  cols = df.columns
+#  for i in cols :
+#   if df[i].isna().sum() < df.shape[0]*0.4:
+#    df[i] = df[i].fillna(df[i].mean())
+#   else:
+#     df = df.drop(columns=i)
     
  return df
 
 
-clean= st.button("Clean")
-if clean:
-    if uploaded_file_2 is not None and uploaded_file_1 is not None:
-        uploaded_file_1.seek(0)
-        uploaded_file_2.seek(0)
-        df_1= pd.read_csv(uploaded_file_1)
-        df_2= pd.read_csv(uploaded_file_2)
-        out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        #st.write(clean_df)
-        st.write("Number of null values in each column:", clean_df.isna().sum())
-        st.write("Number of rows: ", clean_df.shape[0])
+# clean= st.button("Clean")
+# if clean:
+#     if uploaded_file_2 is not None and uploaded_file_1 is not None:
+#         uploaded_file_1.seek(0)
+#         uploaded_file_2.seek(0)
+#         df_1= pd.read_csv(uploaded_file_1)
+#         df_2= pd.read_csv(uploaded_file_2)
+#         out_df=mergeDf(df_1,df_2)
+#         clean_df=clean_col(out_df)
+#         #st.write(clean_df)
+#         st.write("Number of null values in each column:", clean_df.isna().sum())
+#         st.write("Number of rows: ", clean_df.shape[0])
 
 st.header('Exploratory Data Analysis')
 
@@ -149,8 +151,9 @@ if corr:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        corr_df=cor(clean_df)
+        out_df.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+        # clean_df=clean_col(out_df)
+        corr_df=cor(out_df)
         st.write(corr_df)
 
 
@@ -159,8 +162,8 @@ if corr:
     #st.write(df[[Gases,Sensors]])
 
 
-Gases= st.multiselect('Select Gases', options=["CO2_35C", "Acetaldehyde__35c", "Formaldehyde_35c", "Toluene_35c"], key=9)
-Sensors= st.multiselect('Select Sensors', options=['VOC_Sensor_{device="MQ135",_name="VOC_data"}', 'VOC_Sensor_{device="MQ138",_name="VOC_data"}', 'VOC_Sensor_{device="MQ9",_name="VOC_data"}', 'VOC_Sensor_{device="MQ3",_name="VOC_data"}'], key=10)
+Gases= st.multiselect('Select Gases', options=["CO2_35C", "Acetaldehyde__35c", "Formaldehyde_35c", "Toluene_35c", "o3_35c_hitran", "ETHYLENE_35C", "ACETONE_35C", "Octane_35c", "Butane_25c"], key=9)
+Sensors= st.multiselect('Select Sensors', options=['VOC_Sensor_{device="MQ135",_name="VOC_data"}', 'VOC_Sensor_{device="MQ138",_name="VOC_data"}', 'VOC_Sensor_{device="MQ9",_name="VOC_data"}', 'VOC_Sensor_{device="MQ3",_name="VOC_data"}', 'SCD41_CO2', 'VOC Raw', 'NOX Raw', 'GRIMM_PM1.0', 'GRIMM_PM10', 'TSI_PM1.0', 'TSI_PM2.5', 'TSI_PM10', 'CO2'], key=10)
 pairplot = st.button("Pairplot")
 if pairplot:
     if uploaded_file_2 is not None and uploaded_file_1 is not None:
@@ -169,8 +172,10 @@ if pairplot:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        clean_df=clean_df.rename(columns=lambda x:x.replace(' ','_'))
+        out_df=out_df.rename(columns=lambda x:x.replace(' ','_'))
+        out_df.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+        # clean_df=clean_col(out_df)
+        # clean_df=clean_df.rename(columns=lambda x:x.replace(' ','_'))
         #print columns
         # st.write(clean_df.columns)
         # print(clean_df[Gases]) 
@@ -192,26 +197,27 @@ if pairplot:
             if len(axs_shape) == 1:
                 for i in range(len(Gases)):
                     for j in range(len(Sensors)):
-                        axs[j].scatter(clean_df[Gases[i]], clean_df[Sensors[j]])
+                        axs[j].scatter(out_df[Gases[i]], out_df[Sensors[j]])
                         axs[j].set_xlabel(Gases[i])
                         axs[j].set_ylabel(Sensors[j])
             # if axs is 2D array
             elif len(axs_shape) == 2:
                 for i in range(len(Gases)):
                     for j in range(len(Sensors)):
-                        axs[i][j].scatter(clean_df[Gases[i]], clean_df[Sensors[j]])
+                        axs[i][j].scatter(out_df[Gases[i]], out_df[Sensors[j]])
                         axs[i][j].set_xlabel(Gases[i])
                         axs[i][j].set_ylabel(Sensors[j])
         # if axs is not 1D or 2D array
         else:
-            axs.scatter(clean_df[Gases[0]], clean_df[Sensors[0]])
-            axs.set_xlabel(Gases[0])
-            axs.set_ylabel(Sensors[0])
+            print(out_df.columns)
+            axs.scatter(out_df[Gases[0]], out_df[Sensors[0]])
+            axs.set_xlabel(Gases)
+            axs.set_ylabel(Sensors)
         st.pyplot(fig)
        
 
-Gases= st.selectbox('Select Gases', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c','Toluene 35c'], key='1')
-Sensors= st.selectbox('Select Sensors', options=['VOC_Sensor {device="MQ135", name="VOC_data"}', 'VOC_Sensor {device="MQ138", name="VOC_data"}', 'VOC_Sensor {device="MQ9", name="VOC_data"}', 'VOC_Sensor {device="MQ3", name="VOC_data"}'], key='4')
+Gases= st.selectbox('Select Gases', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c','Toluene 35c', 'o3 35c hitran', 'ETHYLENE 35C', 'ACETONE 35C', 'Octane 35c', 'Butane 25c', 'H2O% 35C'], key='1')
+Sensors= st.selectbox('Select Sensors', options=['VOC_Sensor {device="MQ135", name="VOC_data"}', 'VOC_Sensor {device="MQ138", name="VOC_data"}', 'VOC_Sensor {device="MQ9", name="VOC_data"}', 'VOC_Sensor {device="MQ3", name="VOC_data"}', 'SCD41_CO2', 'VOC Raw', 'NOX Raw', 'GRIMM PM1.0', 'GRIMM PM10', 'TSI PM1.0', 'TSI PM2.5', 'TSI PM10', 'CO2', 'humidity', 'VOC'], key='4')
 lineplot = st.button("Lineplot")
 if lineplot:
     if uploaded_file_2 is not None and uploaded_file_1 is not None:
@@ -220,9 +226,10 @@ if lineplot:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        print(clean_df.columns)
-        df_plt= clean_df[[Gases, Sensors]]
+        out_df.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+        # clean_df=clean_col(out_df)
+        # print(clean_df.columns)
+        df_plt= out_df[[Gases, Sensors]]
         
         #corr_df=cor(clean_df)
         fig, ax = plt.subplots()
@@ -231,7 +238,7 @@ if lineplot:
 
 st.header('Machine Learning Models')
 
-Gases= st.selectbox('Select Gas for Prediction', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c', 'Toluene 35c'], key = '5')
+Gases= st.selectbox('Select Gas for Prediction', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c', 'Toluene 35c', 'o3 35c hitran', 'ETHYLENE 35C', 'ACETONE 35C', 'Octane 35c', 'Butane 25c'], key = '5')
 def Split_train_test(df):
     X = df.drop(columns = Gases).copy()
     y = df[Gases].copy()
@@ -284,8 +291,8 @@ if L_Regression:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        l_regression(clean_df)
+        # clean_df=clean_col(out_df)
+        l_regression(out_df)
 
 st.header('KNN Regression Machine Learning Model')
 
@@ -309,8 +316,8 @@ if KNN:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        knn_reg(clean_df)
+        # clean_df=clean_col(out_df)
+        knn_reg(out_df)
 
 st.header('Random Forest Regressor Machine Learning Model')
 
@@ -333,8 +340,8 @@ if RF:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        rf_reg(clean_df)
+        # clean_df=clean_col(out_df)
+        rf_reg(out_df)
 
 
 st.header('All Regression Machine Learning Models')
@@ -346,13 +353,13 @@ if Regression:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
+        # clean_df=clean_col(out_df)
         st.write("**Linear Regression**")
-        l_regression(clean_df)
+        l_regression(out_df)
         st.write("**KNN Regression**")
-        knn_reg(clean_df)
+        knn_reg(out_df)
         st.write("**Random Forest Regression**")
-        rf_reg(clean_df)
+        rf_reg(out_df)
 
 # # Brush for selection
 # brush = alt.selection(type='interval')
@@ -462,8 +469,8 @@ def adjR(x, y, degree):
     st.write("**Best Adjusted R-Squared is:**", max(results))
     curve_equation(x,y,best_degree)
 
-Gases= st.selectbox('Select Gases', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c', 'Toluene 35c'], key='30')
-Sensors= st.selectbox('Select Sensors', options=['VOC_Sensor {device="MQ135", name="VOC_data"}', 'VOC_Sensor {device="MQ138", name="VOC_data"}', 'VOC_Sensor {device="MQ9", name="VOC_data"}', 'VOC_Sensor {device="MQ3", name="VOC_data"}'], key='31')
+Gases= st.selectbox('Select Gases', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c', 'Toluene 35c', 'o3 35c hitran', 'ETHYLENE 35C', 'ACETONE 35C', 'Octane 35c', 'Butane 25c'], key='30')
+Sensors= st.selectbox('Select Sensors', options=['VOC_Sensor {device="MQ135", name="VOC_data"}', 'VOC_Sensor {device="MQ138", name="VOC_data"}', 'VOC_Sensor {device="MQ9", name="VOC_data"}', 'VOC_Sensor {device="MQ3", name="VOC_data"}', 'SCD41_CO2', 'VOC Raw', 'NOX Raw', 'GRIMM PM1.0', 'GRIMM PM10', 'TSI PM1.0', 'TSI PM2.5', 'TSI PM10', 'CO2'], key='31')
 
 curve_fit = st.button("Find the equation and plot the curve")
 if curve_fit:
@@ -473,8 +480,10 @@ if curve_fit:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        adjR(clean_df[Gases], clean_df[Sensors], 10)
+        out_df.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+        # clean_df=clean_col(out_df)
+        #out_df.dropna(inplace=True)
+        adjR(out_df[Gases], out_df[Sensors], 10)
 
 
         
@@ -563,21 +572,22 @@ if imp_curve_fit:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        clean_df=clean_col(out_df)
-        df = clean_df[(clean_df[Sensors] >= value1) & (clean_df[Sensors] <= value2)]
+        # clean_df=clean_col(out_df)
+        df = out_df[(out_df[Sensors] >= value1) & (out_df[Sensors] <= value2)]
         df = df[(df[Gases] >= value3) & (df[Gases] <= value4)]
         best_deg = adjR(df[Gases], df[Sensors], 10)
+        out_df.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
 
 
-    x = clean_df[Sensors]
-    y = clean_df[Gases]
+    x = out_df[Sensors]
+    y = out_df[Gases]
     # predict= np.polynomial.Polynomial.fit(x, y, best_deg)
     predict= np.polyfit(x, y, best_deg)
     p = np.poly1d(predict)
-    x_test = clean_df[Sensors]
+    x_test = out_df[Sensors]
     st.write("\nGiven x_test value is: ", x_test)
     y_pred = p(x_test)
-    st.write("\nPredicted value for given x_test is: ", y_pred)
+    st.write("\nConverted PPM value for given x_test is: ", y_pred)
     #plot for predicted values:
     # fig, ax = plt.subplots()
     # ax.scatter(y_pred, x_test)
@@ -599,7 +609,7 @@ if imp_curve_fit:
 
 #plot for Index in x axis and y pred in y axis :
     fig, ax = plt.subplots()
-    ax.scatter(x= clean_df.index, y= y_pred)
+    ax.scatter(x= out_df.index, y= y_pred)
     x = pd.DataFrame(x)
     y = pd.DataFrame(y)
     ax.set_xlabel("Time")
@@ -621,12 +631,12 @@ if imp_curve_fit:
         # st.write("\nPredicted value of y_pred for given x_test is: ", predict(clean_df[Gases]))
     
     fig, ax = plt.subplots()
-    ax.scatter(x= clean_df.index, y= y_pred)
-    ax.scatter(x= clean_df.index, y= clean_df[Gases])
+    ax.scatter(x= out_df.index, y= y_pred)
+    ax.scatter(x= out_df.index, y= out_df[Gases])
     x = pd.DataFrame(x)
     y = pd.DataFrame(y)
     ax.set_xlabel("Time")
-    ax.set_ylabel("Sensor Values")
+    ax.set_ylabel("Sensor Values, Gases")
     format_xaxis = mdates.DateFormatter('%H:%M')
     ax.xaxis.set_major_formatter(format_xaxis)
     st.pyplot(fig)
