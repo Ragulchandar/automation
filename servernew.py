@@ -662,7 +662,7 @@ if imp_curve_fit:
     y = pd.DataFrame(y)
     x = pd.DataFrame(x)
     ax.set_xlabel("Time")
-    ax.set_ylabel("Sensor Values, Gases")
+    ax.set_ylabel("Sensor Values(concentration in PPM), Gases")
     format_xaxis = mdates.DateFormatter('%H:%M')
     ax.xaxis.set_major_formatter(format_xaxis)
     st.pyplot(fig)
