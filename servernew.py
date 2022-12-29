@@ -110,8 +110,34 @@ if merge:
         # st write number of rows
         st.write("Number of rows: ", out_df.shape[0])
         st.write("Number of null values in each column:", out_df.isna().sum())
-        
+
 def clean_col(df):
+ df= df.dropna(axis=1, how='any', thresh=df.shape[0]*0.4)
+ cols = df.columns
+ for i in cols :
+  if df[i].isna().sum() < df.shape[0]*0.4:
+   df[i] = df[i].fillna(df[i].mean())
+  else:
+    df = df.drop(columns=i)
+    
+ return df
+
+
+clean= st.button("Clean")
+if clean:
+    if uploaded_file_2 is not None and uploaded_file_1 is not None:
+        uploaded_file_1.seek(0)
+        uploaded_file_2.seek(0)
+        df_1= pd.read_csv(uploaded_file_1)
+        df_2= pd.read_csv(uploaded_file_2)
+        out_df=mergeDf(df_1,df_2)
+        out_df=out_df.interpolate(method='linear', limit_direction='forward', axis=0)
+        clean_df=clean_col(out_df)
+        #st.write(clean_df)
+        st.write("Number of null values in each column:", clean_df.isna().sum())
+        st.write("Number of rows: ", clean_df.shape[0])
+        
+#def clean_col(df):
 #  df= df.dropna(axis=1, thresh=df.shape[0]*0.4)
 #  cols = df.columns
 #  for i in cols :
@@ -120,7 +146,7 @@ def clean_col(df):
 #   else:
 #     df = df.drop(columns=i)
     
- return df
+ #return df
 
 
 # clean= st.button("Clean")
@@ -238,7 +264,7 @@ if lineplot:
 
 st.header('Machine Learning Models')
 
-Gases= st.selectbox('Select Gas for Prediction', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c', 'Toluene 35c', 'o3 35c hitran', 'ETHYLENE 35C', 'ACETONE 35C', 'Octane 35c', 'Butane 25c'], key = '5')
+Gases= st.selectbox('Select Gas for Prediction', options=['CO2 35C', 'Acetaldehyde  35c', 'Formaldehyde 35c'], key = '5')
 def Split_train_test(df):
     X = df.drop(columns = Gases).copy()
     y = df[Gases].copy()
@@ -291,8 +317,8 @@ if L_Regression:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        # clean_df=clean_col(out_df)
-        l_regression(out_df)
+        clean_df=clean_col(out_df)
+        l_regression(clean_df)
 
 st.header('KNN Regression Machine Learning Model')
 
@@ -316,8 +342,8 @@ if KNN:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        # clean_df=clean_col(out_df)
-        knn_reg(out_df)
+        clean_df=clean_col(out_df)
+        knn_reg(clean_df)
 
 st.header('Random Forest Regressor Machine Learning Model')
 
@@ -340,8 +366,8 @@ if RF:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        # clean_df=clean_col(out_df)
-        rf_reg(out_df)
+        clean_df=clean_col(out_df)
+        rf_reg(clean_df)
 
 
 st.header('All Regression Machine Learning Models')
@@ -353,13 +379,13 @@ if Regression:
         df_1= pd.read_csv(uploaded_file_1)
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
-        # clean_df=clean_col(out_df)
+        clean_df=clean_col(out_df)
         st.write("**Linear Regression**")
-        l_regression(out_df)
+        l_regression(clean_df)
         st.write("**KNN Regression**")
-        knn_reg(out_df)
+        knn_reg(clean_df)
         st.write("**Random Forest Regression**")
-        rf_reg(out_df)
+        rf_reg(clean_df)
 
 # # Brush for selection
 # brush = alt.selection(type='interval')
@@ -631,10 +657,10 @@ if imp_curve_fit:
         # st.write("\nPredicted value of y_pred for given x_test is: ", predict(clean_df[Gases]))
     
     fig, ax = plt.subplots()
-    ax.scatter(x= out_df.index, y= y_pred)
     ax.scatter(x= out_df.index, y= out_df[Gases])
-    x = pd.DataFrame(x)
+    ax.scatter(x= out_df.index, y= y_pred)
     y = pd.DataFrame(y)
+    x = pd.DataFrame(x)
     ax.set_xlabel("Time")
     ax.set_ylabel("Sensor Values, Gases")
     format_xaxis = mdates.DateFormatter('%H:%M')
