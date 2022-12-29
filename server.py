@@ -1,26 +1,20 @@
 from heapq import merge
-from telnetlib import GA
-from turtle import color
-from sklearn.feature_selection import SelectorMixin
 import streamlit as st
 import math
-import altair as alt
+# mdates
+import matplotlib.dates as mdates
 
-st.title('Metalmark ML Automation')
+st.title('🦋 Metalmark ML Automation 🤖')
 
 import pandas as pd
 import numpy as np
-from io import StringIO
 from pandas.core.arrays.datetimelike import timedelta
 import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.metrics import accuracy_score,f1_score,recall_score,precision_score, confusion_matrix
 from sklearn import neighbors
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 
 st.header('Upload your files')
@@ -212,12 +206,12 @@ if lineplot:
         df_2= pd.read_csv(uploaded_file_2)
         out_df=mergeDf(df_1,df_2)
         clean_df=clean_col(out_df)
-        print(clean_df.columns)
         df_plt= clean_df[[Gases, Sensors]]
         
         #corr_df=cor(clean_df)
         fig, ax = plt.subplots()
         fig = st.line_chart(df_plt, height=500)
+
 
 st.header('Machine Learning Models')
 
@@ -389,11 +383,153 @@ if Regression:
 
 # st.download_button("Download CSV", selected_df.to_csv(), file_name="selected_data.csv")
 
+st.header("Equation of the Improved Curve Fit")
+# print equation of curve fit:
+def convert(s):
+ 
+    # initialization of string to ""
+    new = ""
+ 
+    # traverse in the string
+    for x in s:
+        new += x
+ 
+    # return string
+    return new
 
-
-
-
-
-
-
+def curve_equation(x,y,degree):
+    z = np.polyfit(x, y, degree)
+    f = np.poly1d(z)
+    #new_val(f, pred_gas, clean_df)
+    coeff = []
+    deg = []
+    for d, c in enumerate(f):
+        coeff.append(c)
+        deg.append(d) 
     
+    deg.sort(reverse=True)
+    poly = pd.DataFrame({'coeff':coeff,'deg':deg})
+    eq = []
+    for c,d in zip(poly['coeff'],poly['deg']):
+        eq.append(str(c)+' x^'+str(d))
+        if d!=0:
+            eq.append(" + ")
+        
+    st.write("**Equation of the curve is:**")
+    st.write(convert(eq))
+
+    #plot curve
+    polyline = np.linspace(min(x), max(x), 50)
+    fig, ax = plt.subplots()
+    ax.scatter(x, y)
+    ax.plot(polyline, f(polyline), '--', color='black')
+    x = pd.DataFrame(x)
+    y = pd.DataFrame(y) 
+    ax.set_xlabel(x.columns[0])
+    ax.set_ylabel(y.columns[0])
+    st.pyplot(fig)                
+
+def adjR(x,y, degree):
+    results = []
+    degrees = []
+    for i in range(1, degree+1):
+        coeffs = np.polyfit(x, y, i)
+        p = np.poly1d(coeffs)
+        yhat = p(x)
+        ybar = np.sum(y)/len(y)
+        ssreg = np.sum((yhat-ybar)**2)
+        sstot = np.sum((y - ybar)**2)
+        results.append(1- (((1-(ssreg/sstot))*(len(y)-1))/(len(y)-i-1)))
+        degrees.append(i)
+        
+    best_degree = degrees[results.index(max(results))]
+    st.write("Best Degree: ", best_degree)
+    st.write("**Best Adjusted R-Squared is:**", max(results))
+    curve_equation(x,y,best_degree)
+    return best_degree
+
+
+
+st.header('Improved Curve Fitting')
+
+value1= st.number_input('Type the 1st value of Y-axis', key='50')
+value2= st.number_input('Type the 2nd value of Y-axis', key='51')
+value3= st.number_input('Type the 1st value of X-axis', key='55')
+value4= st.number_input('Type the 2nd value of X-axis', key='56')
+#pred_gas=st.number_input('Type any value', key='59')
+imp_curve_fit = st.button("Find the improved equation and plot the curve", key='52')
+if imp_curve_fit:
+    if uploaded_file_2 is not None and uploaded_file_1 is not None:
+        uploaded_file_1.seek(0)
+        uploaded_file_2.seek(0)
+        df_1= pd.read_csv(uploaded_file_1)
+        df_2= pd.read_csv(uploaded_file_2)
+        out_df=mergeDf(df_1,df_2)
+        clean_df=clean_col(out_df)
+        df = clean_df[(out_df[Sensors] >= value1) & (clean_df[Sensors] <= value2)]
+        df = df[(df[Gases] >= value3) & (df[Gases] <= value4)]
+        best_deg = adjR(df[Gases], df[Sensors], 10)
+        
+
+
+    x = out_df[Sensors]
+    y = out_df[Gases]
+    # predict= np.polynomial.Polynomial.fit(x, y, best_deg)
+    predict= np.polyfit(x, y, best_deg)
+    p = np.poly1d(predict)
+    x_test = out_df[Sensors]
+    st.write("\nGiven x_test value is: ", x_test)
+    y_pred = p(x_test)
+    st.write("\nPredicted value for given x_test is: ", y_pred)
+    #plot for predicted values:
+    # fig, ax = plt.subplots()
+    # ax.scatter(y_pred, x_test)
+    # x = pd.DataFrame(x)
+    # y = pd.DataFrame(y)
+    # ax.set_xlabel(y.columns[0])
+    # ax.set_ylabel(x.columns[0])
+    # st.pyplot(fig)
+
+#plot for Index in x axis and y pred, clean_df[Sensors] in y axis with height 500:
+    # fig, ax = plt.subplots()
+    # ax.scatter(clean_df.index, y_pred)
+    # ax.scatter(clean_df.index, clean_df[Sensors])
+    # x = pd.DataFrame(x)
+    # y = pd.DataFrame(y)
+    # ax.set_xlabel("Index")
+    # ax.set_ylabel("Sensor Values")
+    # st.pyplot(fig)
+
+#plot for Index in x axis and y pred in y axis :
+    fig, ax = plt.subplots()
+    ax.scatter(x= out_df.index, y= y_pred)
+    x = pd.DataFrame(x)
+    y = pd.DataFrame(y)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Sensor Values")
+    format_xaxis = mdates.DateFormatter('%H:%M')
+    ax.xaxis.set_major_formatter(format_xaxis)
+    st.pyplot(fig)
+    
+    # x = df[Gases]
+    # # st.write("X points are: \n", x)
+    # y = df[Sensors]
+    # st.write("Sensor values are: \n", y)
+    # predict = np.polynomial.Polynomial.fit(x, y, best_deg)
+    # #st.write("\nGiven x_test value is: ", x_test)
+    # #y_pred = predict(x_test)
+    # st.write("\nPredicted value of Gases for given Sensors are: ", predict(clean_df[Gases]))
+        
+        # predict = np.polynomial.Polynomial.fit(clean_df[Gases], clean_df[Sensors], best_deg)
+        # st.write("\nPredicted value of y_pred for given x_test is: ", predict(clean_df[Gases]))
+    
+    fig, ax = plt.subplots()
+    ax.scatter(x= out_df.index, y= y_pred)
+    ax.scatter(x= out_df.index, y= out_df[Gases])
+    x = pd.DataFrame(x)
+    y = pd.DataFrame(y)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Sensor Values, Gases")
+    format_xaxis = mdates.DateFormatter('%H:%M')
+    ax.xaxis.set_major_formatter(format_xaxis)
+    st.pyplot(fig)
