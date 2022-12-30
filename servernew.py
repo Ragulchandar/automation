@@ -661,6 +661,7 @@ if imp_curve_fit:
     ax.scatter(x= out_df.index, y= y_pred)
     y = pd.DataFrame(y)
     x = pd.DataFrame(x)
+    ax.legend(labels=[Gases, Sensors], loc='upper right', fontsize='small')
     ax.set_xlabel("Time")
     ax.set_ylabel("Sensor Values(concentration in PPM), Gases")
     format_xaxis = mdates.DateFormatter('%H:%M')
