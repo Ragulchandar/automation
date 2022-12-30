@@ -638,6 +638,7 @@ if imp_curve_fit:
     ax.scatter(x= out_df.index, y= y_pred)
     x = pd.DataFrame(x)
     y = pd.DataFrame(y)
+    ax.legend(labels=[Sensors], loc='upper right', fontsize='small')
     ax.set_xlabel("Time")
     ax.set_ylabel("Sensor Values")
     format_xaxis = mdates.DateFormatter('%H:%M')
